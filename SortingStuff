@@ -1,0 +1,128 @@
+/*
+ * To change this license header, choose License Headers in Project Properties.
+ * To change this template file, choose Tools | Templates
+ * and open the template in the editor.
+ */
+package sortingstuff;
+
+import java.io.BufferedWriter;
+import java.io.ByteArrayOutputStream;
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.util.Arrays;
+
+/**
+ *
+ * @author lupeiyu
+ */
+
+public class SortingStuff
+{
+
+    /**
+     * @param args the command line arguments
+     */
+    public static void main(String[] args)
+    {
+        long l = System.currentTimeMillis();
+        byte[] bytes;
+        try
+        {
+            String address = "random.txt";
+            Path p = Paths.get(address);
+            bytes = Files.readAllBytes(p);
+            count(bytes);
+        }catch(Exception e)
+        {
+            e.printStackTrace();
+        }
+        finally
+        {
+            long answer = System.currentTimeMillis()-l; 
+            System.out.println(answer);
+        }
+        
+    }
+    public static void count(byte[] arrayOfB)
+    {  
+        int maxNumber = 100000;
+        int num = 0;
+        int currentNumber = 0;
+        int[] allNumber = new int[maxNumber+1];
+        for(int i = 0;i<arrayOfB.length; i++)
+        {
+            num=arrayOfB[i]-'0';
+            if(num<=9&&num>=0)
+            {   
+                currentNumber*=10;
+                currentNumber+=num;
+            }
+            else
+            {   
+                allNumber[currentNumber] += 1;
+                currentNumber = 0;
+                
+            }
+        }
+        
+        FileOutputStream fos = null;
+        File newFile;
+        
+        try
+        {
+        newFile = new File("./Sorted/SortedList.txt");
+        byte[] total = new byte[100000000];
+        int insertPoint = 0;
+        fos= new FileOutputStream(newFile);
+            if (!newFile.exists()) 
+            {
+                newFile.createNewFile();
+            }
+            for(int i =1;i<maxNumber;i++)
+            {
+                if(allNumber[i] == 0) continue;
+                byte[] template = new byte[10];//bytes that the current number is using
+                template[template.length-1] = (byte)'\n';//new line
+                template[template.length-2] = (byte)'\r';
+                int currentNum = i;//easier to manage
+                int firstChar = template.length - 3;//write backwards, so the first digit been written is 
+                while(currentNum > 0)//until the number is less than1
+                {
+                    template[firstChar] = (byte)(currentNum % 10 + '0');//get the current digit
+                    currentNum /= 10;//get every digit in the number
+                    firstChar--;
+                }
+                firstChar++; //reset first char cuz it runs over 1
+                int copyLength = template.length - firstChar;
+                for(int j=0;j<allNumber[i];j++)//should not be j<=allNumber[i], because the 
+                {
+                    System.arraycopy(template, firstChar, total, insertPoint, copyLength);
+                    insertPoint += copyLength;//the insert point ends up with the total length
+                }
+            }
+            fos.write(total, 0, insertPoint);
+            fos.flush();
+        }catch(IOException e)
+        {
+            e.printStackTrace();
+        } 
+        finally {
+	  try {
+	     if (fos != null) 
+	     {
+		 fos.close();
+	     }
+          } 
+	  catch (IOException ioe) {
+	     System.out.println("Error in closing the Stream");
+	  }
+       }
+    }
+   
+    
+    
+}
